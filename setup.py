@@ -7,6 +7,6 @@ setup(name='legacy_wq_models',
       author='Hodge.WaterResources, LLC',
       author_email='',
       license='MIT',
-      packages=['legcy_wq_models'],
+      packages=['legacy_wq_models'],
       keywords='water_quality modeling stfate',
       zip_safe=False)
