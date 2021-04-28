@@ -180,7 +180,7 @@ class Input3D(Input):
                                       description)
         
         if n > 0 and m > 0:
-            self.set_value_array(m, n, dtype)
+            self.set_value_array(m, n, t, dtype)
         
     def set_value_array(self, m, n, t, dtype):
         self.value = np.zeros((m, n, t), dtype=dtype)
@@ -206,7 +206,7 @@ class Output():
         """
         # initialize attributes
         self.value = value
-        self.description = description
+        self._description = description
         
     # getter methods
     def get_value(self):
@@ -242,7 +242,7 @@ class Output1D(Output):
                  dtype='float',
                  value=None,
                  description=''): 
-        super(Input1D, self).__init__(value,
+        super(Output1D, self).__init__(value,
                                       description)
         
         if n > 0:
@@ -292,7 +292,7 @@ class Output3D(Output):
                                       description)
         
         if n > 0 and m > 0:
-            self.set_value_array(m, n, dtype)
+            self.set_value_array(m, n, t, dtype)
         
     def set_value_array(self, m, n, t, dtype):
         self.value = np.zeros((m, n, t), dtype=dtype)
