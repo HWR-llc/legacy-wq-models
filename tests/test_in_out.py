@@ -11,12 +11,14 @@ from legacy_wq_models import in_out as io
 
 class TestInput:
     def test_input(self):
-        t_in = io.Input(value=5,
-                           default=7,
-                           lower_bound=1,
-                           upper_bound=20,
-                           typical='test typical range',
-                           description='test description')
+        t_in = io.Input(name='var_in',
+                        value=5,
+                        default=7,
+                        lower_bound=1,
+                        upper_bound=20,
+                        typical='test typical range',
+                        description='test description')
+        assert t_in.get_name() == 'var_in'
         assert t_in.get_value() == 5
         assert t_in.get_default() == 7
         assert t_in.get_typical() == 'test typical range'
@@ -75,8 +77,10 @@ class TestInput3D:
         
 class TestOutput:
     def test_output(self):
-        t_out = io.Output(value=5,
+        t_out = io.Output(name='var_out',
+                          value=5,
                            description='test description')
+        assert t_out.get_name() == 'var_out'
         assert t_out.get_value() == 5
         assert t_out.get_description() == 'test description'
     
@@ -113,3 +117,29 @@ class TestOutput3D:
     def test_dtype(self):
         t_out = io.Output3D(m=8, n=3, t=5, dtype='int')
         assert t_out.get_value().dtype == 'int'
+        
+class TestInOutContainer:
+    def test_append_remove(self):
+        t_in_cont = io.InOutContainer()
+        t_in1 = io.Input(name='var_in1',
+                        value=5,
+                        default=7,
+                        lower_bound=1,
+                        upper_bound=20,
+                        typical='test typical range',
+                        description='test description')       
+        t_in2 = io.Input0D(name='var_in2')       
+        t_in_cont.append(t_in1)
+        t_in_cont.append(t_in2)
+        assert t_in_cont.size == 2
+        t_in_cont.remove_by_name('var_in1')
+        assert t_in_cont.size == 1
+    def test_mult_append(self):
+        t_in_cont = io.InOutContainer()
+        t_in1 = io.Input0D(name='var_in1') 
+        t_in2 = io.Input0D(name='var_in2') 
+        t_in3 = io.Input0D(name='var_in3')
+        t_list = [t_in1, t_in2, t_in3]
+        t_in_cont.multi_append(t_list)
+        assert t_in_cont.size == 3
+        assert t_in_cont.get_all_names() == ['var_in1', 'var_in2', 'var_in3']

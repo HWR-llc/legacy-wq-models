@@ -136,6 +136,43 @@ class OutputFile():
         """
         print('placeholder function only')
         
+class FileContainer():
+    """
+    container for all files for a articular model
+    """     
+    def __init__(self):
+        self.contents = dict()
+        self.size = 0
+        
+    def append(self, put):
+        all_names = self.get_all_names()
+        if put.get_name() not in all_names:
+            self.contents[put.get_name()] = put
+            self.size = len(self.contents)
+        else:
+            # eventually needs to be error/warning in logging
+            print('file already in container')
+        
+    def multi_append(self, puts):
+        for put in puts:
+            self.append(put)
+    
+    def remove_by_name(self, put_name):
+        all_names = self.get_all_names()
+        if put_name in all_names:
+            self.contents.pop(put_name)
+            self.size = len(self.contents)
+        else:
+            # eventually needs to be error/warning in logging
+            print('input not in container')        
+
+    def get_all_names(self):
+        return_list = []
+        for key in self.contents:
+            return_list.append(self.contents[key].get_name())
+        return return_list
+    
+        
 # functions
 def hello():
     print('hello from filer!')

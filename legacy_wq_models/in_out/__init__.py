@@ -14,5 +14,6 @@ from .in_out import (Input,
                      Output1D,
                      Output2D,
                      Output3D,
+                     InOutContainer,
                      hello
                      )

@@ -7,5 +7,6 @@ imports to have it all in one namespace
 from .filer import (InOutFile,
                     InputFile,
                     OutputFile,
+                    FileContainer,
                     hello
                      )

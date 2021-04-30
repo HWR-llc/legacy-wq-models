@@ -15,6 +15,7 @@ class Input():
     Basic model input, called to build inputs with dimensions
     """    
     def __init__(self,
+                 name='',
                  value=None,
                  default=None,
                  lower_bound=None,
@@ -24,6 +25,9 @@ class Input():
         """
         This class will only be called by dimensional inputs (e.g., Input_0D)
         
+        :name: the name of the model input, for use in collection
+                type - str
+                
         :value: the value of the model input expect 0D, 1D, 2D, 3D, 4D dataset
                 type - str or number, array, matrix etc.
 
@@ -42,6 +46,7 @@ class Input():
                       type - str
         """
         # initialize attributes
+        self._name = name
         self.value = value
         self._default = default
         self.__lwrbnd = lower_bound
@@ -58,6 +63,9 @@ class Input():
                 self._typical = str(self.__lwrbnd) + ' - ' + str(self.__uprbnd)
         
     # getter methods
+    def get_name(self):
+        return self._name
+    
     def get_value(self):
         return self.value
     
@@ -80,13 +88,15 @@ class Input0D(Input):
     0-dimensional model input i.e., a number
     """    
     def __init__(self,
+                 name='',
                  value=None,
                  default=None,
                  lower_bound=None,
                  upper_bound=None,
                  typical='',
                  description=''):
-        super(Input0D, self).__init__(value,
+        super(Input0D, self).__init__(name,
+                                      value,
                                       default,
                                       lower_bound,
                                       upper_bound,
@@ -104,13 +114,15 @@ class Input1D(Input):
     def __init__(self,
                  n=0,
                  dtype='float',
+                 name='',
                  value=None,
                  default=None,
                  lower_bound=None,
                  upper_bound=None,
                  typical='',
                  description=''): 
-        super(Input1D, self).__init__(value,
+        super(Input1D, self).__init__(name,
+                                      value,
                                       default,
                                       lower_bound,
                                       upper_bound,
@@ -135,13 +147,15 @@ class Input2D(Input):
                  m=0,
                  n=0,
                  dtype='float',
+                 name='',
                  value=None,
                  default=None,
                  lower_bound=None,
                  upper_bound=None,
                  typical='',
                  description=''): 
-        super(Input2D, self).__init__(value,
+        super(Input2D, self).__init__(name,
+                                      value,
                                       default,
                                       lower_bound,
                                       upper_bound,
@@ -166,13 +180,15 @@ class Input3D(Input):
                  n=0,
                  t=0,
                  dtype='float',
+                 name='',
                  value=None,
                  default=None,
                  lower_bound=None,
                  upper_bound=None,
                  typical='',
                  description=''): 
-        super(Input3D, self).__init__(value,
+        super(Input3D, self).__init__(name,
+                                      value,
                                       default,
                                       lower_bound,
                                       upper_bound,
@@ -193,11 +209,15 @@ class Output():
     Basic model output, called to build inputs with dimensions
     """    
     def __init__(self,
+                 name='',
                  value=None,
                  description=''):
         """
         This class will only be called by dimensional outputs (e.g., Output_0D)
         
+        :name: name of output
+                type - str 
+
         :value: the value of the model output expect 0D, 1D, 2D, 3D, 4D dataset
                 type - str or number, array, matrix etc.
 
@@ -205,10 +225,14 @@ class Output():
                       type - str
         """
         # initialize attributes
+        self._name = name
         self.value = value
         self._description = description
         
     # getter methods
+    def get_name(self):
+        return self._name
+    
     def get_value(self):
         return self.value
     
@@ -225,9 +249,11 @@ class Output0D(Output):
     0-dimensional model output i.e., a number
     """    
     def __init__(self,
+                 name='',
                  value=None,
                  description=''):
-        super(Output0D, self).__init__(value,
+        super(Output0D, self).__init__(name,
+                                       value,
                                       description)
         
     def value_check(self):
@@ -240,9 +266,11 @@ class Output1D(Output):
     def __init__(self,
                  n=0,
                  dtype='float',
+                 name='',
                  value=None,
                  description=''): 
-        super(Output1D, self).__init__(value,
+        super(Output1D, self).__init__(name,
+                                       value,
                                       description)
         
         if n > 0:
@@ -263,10 +291,12 @@ class Output2D(Output):
                  m=0,
                  n=0,
                  dtype='float',
+                 name='',
                  value=None,
                  description=''): 
-        super(Output2D, self).__init__(value,
-                                      description)
+        super(Output2D, self).__init__(name,
+                                       value,
+                                       description)
         
         if n > 0 and m > 0:
             self.set_value_array(m, n, dtype)
@@ -286,10 +316,12 @@ class Output3D(Output):
                  n=0,
                  t=0,
                  dtype='float',
+                 name='',
                  value=None,
                  description=''): 
-        super(Output3D, self).__init__(value,
-                                      description)
+        super(Output3D, self).__init__(name,
+                                       value,
+                                       description)
         
         if n > 0 and m > 0:
             self.set_value_array(m, n, t, dtype)
@@ -300,8 +332,42 @@ class Output3D(Output):
     def value_check(self):
         print('method for checking values in array')
 
+class InOutContainer():
+    """
+    container for all inputs or outputs for a particular model
+    """     
+    def __init__(self):
+        self.contents = dict()
+        self.size = 0
+        
+    def append(self, put):
+        all_names = self.get_all_names()
+        if put.get_name() not in all_names:
+            self.contents[put.get_name()] = put
+            self.size = len(self.contents)
+        else:
+            # eventually needs to be error/warning in logging
+            print('input already in container')
+        
+    def multi_append(self, puts):
+        for put in puts:
+            self.append(put)
+    
+    def remove_by_name(self, put_name):
+        all_names = self.get_all_names()
+        if put_name in all_names:
+            self.contents.pop(put_name)
+            self.size = len(self.contents)
+        else:
+            # eventually needs to be error/warning in logging
+            print('input not in container')        
+
+    def get_all_names(self):
+        return_list = []
+        for key in self.contents:
+            return_list.append(self.contents[key].get_name())
+        return return_list
+    
 # functions
 def hello():
     print('hello from in_out!')
-    
-# classes
