@@ -45,6 +45,11 @@ class TestInput:
         t_in = io.Input(value='DUE')
         assert t_in.get_value() == 'DUE'
         
+    def test_name_iter(self):
+        t_in = io.Input(name='1')
+        t_in.name_iter()
+        assert t_in.get_name() == '2'
+        
 
 class TestInput1D:
     def test_input1d(self):
@@ -74,6 +79,30 @@ class TestInput3D:
     def test_dtype(self):
         t_in = io.Input3D(m=8, n=3, t=5, dtype='int')
         assert t_in.get_value().dtype == 'int'
+
+class TestInputStructured:
+    def test_inputstructured(self):
+        t_in = io.InputStructured(fields=['var1', 'var2', 'var3'],
+                                  dtypes=['str', 'float', 'int'],
+                                  rows=5)
+        assert t_in.get_value().size == 5
+        assert t_in.get_value().dtype.names == ('var1', 'var2', 'var3')
+    def test_inputstructured_no_rows(self):
+        t_in = io.InputStructured(fields=['var1', 'var2', 'var3'],
+                                  dtypes=['str', 'float', 'int'])
+        t_in.set_rows(7)
+        assert t_in.get_value().size == 7
+    def test_inputstructured_set_value(self):
+        t_in = io.InputStructured(fields=['var1', 'var2', 'var3'],
+                                  dtypes=['<U10', 'float', 'int'])
+        t_in.set_rows(4)
+        in_vals = [('hi', 56.32, 1),
+                   ('how', 33.32, 2),
+                   ('are', 76.32, 3),
+                   ('you', 1.32, 4)]
+        t_in.set_value(in_vals)
+        assert t_in.get_value()['var1'][0] == 'hi'
+        assert t_in.get_value()['var3'][3] == 4
         
 class TestOutput:
     def test_output(self):
@@ -120,7 +149,7 @@ class TestOutput3D:
         
 class TestInOutContainer:
     def test_append_remove(self):
-        t_in_cont = io.InOutContainer()
+        t_in_cont = io.InOutContainer('all')
         t_in1 = io.Input(name='var_in1',
                         value=5,
                         default=7,
@@ -135,11 +164,29 @@ class TestInOutContainer:
         t_in_cont.remove_by_name('var_in1')
         assert t_in_cont.size == 1
     def test_mult_append(self):
-        t_in_cont = io.InOutContainer()
+        t_in_cont = io.InOutContainer('all',
+                                      description='description of all items in container')
         t_in1 = io.Input0D(name='var_in1') 
         t_in2 = io.Input0D(name='var_in2') 
         t_in3 = io.Input0D(name='var_in3')
         t_list = [t_in1, t_in2, t_in3]
         t_in_cont.multi_append(t_list)
+        assert t_in_cont.get_name() == 'all'
+        assert t_in_cont.get_description()  == 'description of all items in container'
         assert t_in_cont.size == 3
-        assert t_in_cont.get_all_names() == ['var_in1', 'var_in2', 'var_in3']
+        assert t_in_cont.get_contents_names() == ['var_in1', 'var_in2', 'var_in3']
+    def test_get_contents(self):
+        t_in_cont = io.InOutContainer('all')
+        t_in1 = io.Input(name='var_in1',
+                        value=5,
+                        default=7,
+                        lower_bound=1,
+                        upper_bound=20,
+                        typical='test typical range',
+                        description='test description')       
+        t_in2 = io.Input0D(name='var_in2')       
+        t_in_cont.append(t_in1)
+        t_in_cont.append(t_in2)
+        conts = t_in_cont.get_contents()
+        assert conts.keys().__contains__('var_in1')
+        assert conts.keys().__contains__('var_in2')

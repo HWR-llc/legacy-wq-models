@@ -82,6 +82,11 @@ class Input():
     def set_value(self, new_value):
         # input validation can be completed for child classes
         self.value = new_value
+        
+    def name_iter(self):
+        if self._name.isnumeric():
+            new_name_num = int(self._name)
+            self._name = str(new_name_num + 1)
             
 class Input0D(Input):
     """
@@ -200,6 +205,48 @@ class Input3D(Input):
         
     def set_value_array(self, m, n, t, dtype):
         self.value = np.zeros((m, n, t), dtype=dtype)
+        
+    def value_check(self):
+        print('method for checking values in array')
+
+class InputStructured(Input):
+    """
+    A structured array model input i.e., a table per numpy structured array
+    """    
+    def __init__(self,
+                 fields,
+                 dtypes,
+                 rows=0,
+                 name='',
+                 value=None,
+                 default=None,
+                 lower_bound=None,
+                 upper_bound=None,
+                 typical='',
+                 description=''): 
+        super(InputStructured, self).__init__(name,
+                                      value,
+                                      default,
+                                      lower_bound,
+                                      upper_bound,
+                                      typical,
+                                      description)
+        self._fields = fields
+        self._dtypes = dtypes
+        self.set_rows(rows)
+
+        
+    def set_rows(self, rows):
+        fld_dtp = dict(names = self._fields, formats=self._dtypes)
+        self.value = np.zeros(rows, dtype=fld_dtp)
+        
+    def set_value(self, new_value):
+        if len(new_value) == self.value.size:
+            for i in range(0,len(new_value)):
+                self.value[i] = new_value[i]
+        else:
+            print('raise error')
+                
         
     def value_check(self):
         print('method for checking values in array')
@@ -336,12 +383,16 @@ class InOutContainer():
     """
     container for all inputs or outputs for a particular model
     """     
-    def __init__(self):
+    def __init__(self,
+                 name,
+                 description=''):
         self.contents = dict()
         self.size = 0
+        self.name = name
+        self._description = description
         
     def append(self, put):
-        all_names = self.get_all_names()
+        all_names = self.get_contents_names()
         if put.get_name() not in all_names:
             self.contents[put.get_name()] = put
             self.size = len(self.contents)
@@ -354,19 +405,27 @@ class InOutContainer():
             self.append(put)
     
     def remove_by_name(self, put_name):
-        all_names = self.get_all_names()
+        all_names = self.get_contents_names()
         if put_name in all_names:
             self.contents.pop(put_name)
             self.size = len(self.contents)
         else:
             # eventually needs to be error/warning in logging
-            print('input not in container')        
+            print('input not in container')
 
-    def get_all_names(self):
+    def get_name(self):
+        return self.name
+
+    def get_description(self):
+        return self._description
+    
+    def get_contents_names(self):
         return_list = []
         for key in self.contents:
             return_list.append(self.contents[key].get_name())
         return return_list
+    def get_contents(self):
+        return self.contents
     
 # functions
 def hello():

@@ -28,8 +28,8 @@ class Model():
         # initialize attributes
         self._name = name
         self._description = description
-        self.inputs = io.InOutContainer()
-        self.outputs = io.InOutContainer()
+        self.inputs = io.InOutContainer('all')
+        self.outputs = io.InOutContainer('all')
         self.input_files = filer.FileContainer()
         self.output_files = filer.FileContainer()
         

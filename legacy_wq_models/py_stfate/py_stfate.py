@@ -51,11 +51,11 @@ ibins = io.Input0D(name='IBINS',
                    default=0,
                    description="""NUMBER OF HOPPER BINS OPENING SIMULTANEOUSLY
                                   type=integer""")
-nzsect = io.Input0D(name='NZSSECT',
+nzsect = io.Input0D(name='NZSECT',
                    default=0,
                    description="""N-LOCATION TO LOOK AT VERTICAL CONTOUR PLOT
                                   (NOT USED) type=integer""")
-mzsect = io.Input0D(name='MZSSECT',
+mzsect = io.Input0D(name='MZSECT',
                    default=0,
                    description="""M-LOCATION TO LOOK AT VERTICAL CONTOUR PLOT
                                   (NOT USED) type=integer""")
@@ -355,49 +355,45 @@ volm = io.Input1D(name='VOLM',
 amll = io.Input0D(name='AMLL',
                   description="""MULTIPLE OF THE LIQUID LIMIT OF MATERIAL
                                  - ONLY USED IF JBFC = 1 type=float""")
-param = io.Input1D(name='PARAM',
-                   description="""IDENTIFIER OF THE SEDIMENT FRACTION
-                                  type=1-D numpy array (string)""")
-roas = io.Input1D(name='ROAS',
-                  description="""DENSITY OF THIS FRACTION (GM/CC)
-                                 type=1-D numpy array (float)""")
-cs = io.Input1D(name='CS',
-                description="""CONCENTRATION OF THIS SEDIMENT FRACTION (VOL/VOL)
-                               type=1-D numpy array (float)""")
-vfall = io.Input1D(name='VFALL',
-                   description="""PARTICLE FALL VELOCITY (FT/SEC)
-                                  type=1-D numpy array (float)""")
-voids = io.Input1D(name='VOIDS',
-                   description="""VOIDS RATIO OF THIS SEDIMENT FRACTION. USED
-                                  TO COMPUTE DEPTH OF BOTTOM DEPOSITION
-                                  type=1-D numpy array (float)""")
-taucr = io.Input1D(name='TAUCR',
-                   description="""CRITICAL SHEAR STRESS FOR DEPOSITION.
-                                  TYPICAL VALUES
-                                  CLAY = .0006 - .0003  SILT  = .003 - .02
-                                  SAND = .02   - .30  (POUNDS FORCE/SQ. FT.)
-                                  type=1-D numpy array (float)""")
-icohes = io.Input1D(name='ICOHES',
-                    lower_bound=0,
-                    upper_bound=1,
-                    description="""0 SEDIMENT FRACTION SETTLES WITH PARTICLE VELOCITY
-                                   1 SEDIMENT IS COHESIVE AND FALL VELOCITY IS COMPUTED
-                                   type=1-D numpy array (integer)""")
-imix = io.Input1D(name='IMIX',
-                  lower_bound=0,
-                  upper_bound=1,
-                  description="""0 THIS SEDIMENT FRACTION NOT CONSIDERED IN
-                                   MIXING ZONE CALCULATIONS
-                                 1 THIS SEDIMENT FRACTION IS CONSIDERED IN MIXING
-                                   ZONE CALCULATIONS
-                                   type=1-D numpy array (integer)""")
-istrip = io.Input1D(name='ISTRIP',
-                    lower_bound=0,
-                    upper_bound=1,
-                    description="""1 SEDIMENT FRACTION CAN BE STRIPPED AWAY DURING
-                                     CONVECTIVE DESCENT
-                                   0 NO STRIPPING
-                                   type=1-D numpy array (integer)""")
+param = io.InOutContainer(name='PARAM',
+                          description="""includes multiple inputs that are 
+                                         grouped together:
+                                         PARAM = IDENTIFIER OF THE SEDIMENT FRACTION
+                                                 type=string
+                                         ROAS = DENSITY OF THIS FRACTION (GM/CC)
+                                                type=float
+                                         CS = CONCENTRATION OF THIS SEDIMENT
+                                              FRACTION (VOL/VOL) type=float
+                                         VFALL = PARTICLE FALL VELOCITY (FT/SEC)
+                                                 type=float
+                                         VOIDS = VOIDS RATIO OF THIS SEDIMENT FRACTION.
+                                                 USED TO COMPUTE DEPTH OF BOTTOM DEPOSITION
+                                                 type=float
+                                         TAUCR = CRITICAL SHEAR STRESS FOR DEPOSITION.
+                                                 TYPICAL VALUES
+                                                 CLAY = .0006 - .0003  SILT  = .003 - .02
+                                                 SAND = .02   - .30  (POUNDS FORCE/SQ. FT.)
+                                                 type=float
+                                         ICOHES = 0 SEDIMENT FRACTION SETTLES WITH
+                                                    PARTICLE VELOCITY
+                                                  1 SEDIMENT IS COHESIVE AND FALL
+                                                    VELOCITY IS COMPUTED
+                                                  type=integer (0 or 1)
+                                         IMIX = 0 SEDIMENT FRACTION SETTLES WITH
+                                                  PARTICLE VELOCITY
+                                                1 SEDIMENT IS COHESIVE AND FALL
+                                                  VELOCITY IS COMPUTED
+                                                type=integer (0 or 1)
+                                         ISTRIP = 1 SEDIMENT FRACTION CAN BE 
+                                                    STRIPPED AWAY DURING CONVECTIVE DESCENT
+                                                  0 NO STRIPPING
+                                                  type=integer (0 or 1)
+                                        type=numpy structured array""")
+param_1 = io.InputStructured(['PARAM', 'ROAS', 'CS', 'VFALL', 'VOIDS', 'TAUCR', 'ICOHES', 'IMIX', 'ISTRIP'],
+                             ['<U10', 'float', 'float','float', 'float', 'float', 'int',   'int',  'int'],
+                             name='1',
+                             description='see container')
+param.append(param_1)
 paramtr = io.Input1D(name='PARAMTR',
                      description="""IDENTIFIER OF CONSERVATIVE TRACER
                                     type=1-D numpy array (string)""")
@@ -421,8 +417,7 @@ all_inputs = [due_in_flag, itype, id_, nmax, mmax, ns, nlayer, ibins, nzsect,
               y, roa, iform, du1, du2, uu1, uu2, dw1, dw2, ww1, ww2, vax, vaz,
               d, tstop, dtl, bargl, bargw, drel1, drel2, fden, alpha0, beta,
               cm, cd, gama, cdrag, cfric, cd3, cd4, alphac, frictn, alamda, aky0,
-              cstrip, cu, cw, volm, amll, param, roas, cs, vfall, voids, taucr,
-              icohes, imix, istrip, paramtr, cinit, cback, tprt, ]
+              cstrip, cu, cw, volm, amll, param, paramtr, cinit, cback, tprt]
 
 # STFATE model class
 class PySTFATE(model.Model):
