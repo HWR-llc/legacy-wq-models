@@ -21,3 +21,8 @@ share/python-wheels/
 *.egg
 
 __pycache__/
+
+# sphinx pieces to ignore
+docs/build/
+docs/make.bat
+docs/Makefile
