@@ -136,7 +136,7 @@ class OutputFile():
         """
         print('placeholder function only')
         
-class FileContainer():
+class Container():
     """
     container for all files for a articular model
     """     

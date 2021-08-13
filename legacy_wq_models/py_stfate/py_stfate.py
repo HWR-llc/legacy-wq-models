@@ -355,7 +355,7 @@ volm = io.Input1D(name='VOLM',
 amll = io.Input0D(name='AMLL',
                   description="""MULTIPLE OF THE LIQUID LIMIT OF MATERIAL
                                  - ONLY USED IF JBFC = 1 type=float""")
-param = io.InOutContainer(name='PARAM',
+param = io.Container(name='PARAM',
                           description="""includes multiple inputs that are 
                                          grouped together:
                                          PARAM = IDENTIFIER OF THE SEDIMENT FRACTION

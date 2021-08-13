@@ -28,7 +28,7 @@ class Input():
         :name: the name of the model input, for use in collection
                 type - str
                 
-        :value: the value of the model input expect 0D, 1D, 2D, 3D, 4D dataset
+        :value: the value of the model input expect 0D, 1D, 2D, 3D, structured dataset
                 type - str or number, array, matrix etc.
 
         :default: a value that can be used if value not specified
@@ -77,16 +77,14 @@ class Input():
     
     def get_description(self):
         return self._description
-    
-    # setter methods only allowable property to set is value
-    def set_value(self, new_value):
-        # input validation can be completed for child classes
-        self.value = new_value
-        
+          
     def name_iter(self):
         if self._name.isnumeric():
             new_name_num = int(self._name)
             self._name = str(new_name_num + 1)
+
+    def value_check(self):
+        print('method for checking value')
             
 class Input0D(Input):
     """
@@ -109,8 +107,24 @@ class Input0D(Input):
                                       description)
 
         
+    # setter methods only allowable property to set is value
+    def set_value(self, new_value):
+        # input validation can be completed for child classes
+        self.value = new_value
+        
     def value_check(self):
-        print('method for checking value')
+        if type(self.value) == int or float:
+            if (type(self._Input__lwrbnd) == type(self.value)) and (type(self._Input__uprbnd) == type(self.value)):
+                if self.value <= self._Input__uprbnd and self.value >= self._Input__lwrbnd:
+                    return True
+                else:
+                    return False
+            else:
+                print('lower_bound or upper_bound is not defined consistent with value')
+                return True
+        else:
+            print('value datatype is non-numeric')
+            return True
 
 class Input1D(Input):
     """
@@ -135,10 +149,10 @@ class Input1D(Input):
                                       description)
         
         if n > 0:
-            self.set_value_array(n, dtype)
+            self.set_value(n, dtype)
         
         
-    def set_value_array(self, n, dtype):
+    def set_value(self, n, dtype):
         self.value = np.zeros(n, dtype=dtype)
         
     def value_check(self):
@@ -168,9 +182,9 @@ class Input2D(Input):
                                       description)
         
         if n > 0 and m > 0:
-            self.set_value_array(m, n, dtype)
+            self.set_value(m, n, dtype)
         
-    def set_value_array(self, m, n, dtype):
+    def set_value(self, m, n, dtype):
         self.value = np.zeros((m, n), dtype=dtype)
         
     def value_check(self):
@@ -201,9 +215,9 @@ class Input3D(Input):
                                       description)
         
         if n > 0 and m > 0:
-            self.set_value_array(m, n, t, dtype)
+            self.set_value(m, n, t, dtype)
         
-    def set_value_array(self, m, n, t, dtype):
+    def set_value(self, m, n, t, dtype):
         self.value = np.zeros((m, n, t), dtype=dtype)
         
     def value_check(self):
@@ -302,9 +316,6 @@ class Output0D(Output):
         super(Output0D, self).__init__(name,
                                        value,
                                       description)
-        
-    def value_check(self):
-        print('method for checking value')
 
 class Output1D(Output):
     """
@@ -321,14 +332,11 @@ class Output1D(Output):
                                       description)
         
         if n > 0:
-            self.set_value_array(n, dtype)
+            self.set_value(n, dtype)
         
         
-    def set_value_array(self, n, dtype):
+    def set_value(self, n, dtype):
         self.value = np.zeros(n, dtype=dtype)
-        
-    def value_check(self):
-        print('method for checking values in array')
 
 class Output2D(Output):
     """
@@ -346,13 +354,10 @@ class Output2D(Output):
                                        description)
         
         if n > 0 and m > 0:
-            self.set_value_array(m, n, dtype)
+            self.set_value(m, n, dtype)
         
-    def set_value_array(self, m, n, dtype):
+    def set_value(self, m, n, dtype):
         self.value = np.zeros((m, n), dtype=dtype)
-        
-    def value_check(self):
-        print('method for checking values in array')
 
 class Output3D(Output):
     """
@@ -371,15 +376,12 @@ class Output3D(Output):
                                        description)
         
         if n > 0 and m > 0:
-            self.set_value_array(m, n, t, dtype)
+            self.set_value(m, n, t, dtype)
         
-    def set_value_array(self, m, n, t, dtype):
+    def set_value(self, m, n, t, dtype):
         self.value = np.zeros((m, n, t), dtype=dtype)
-        
-    def value_check(self):
-        print('method for checking values in array')
 
-class InOutContainer():
+class Container():
     """
     container for all inputs or outputs for a particular model
     """     

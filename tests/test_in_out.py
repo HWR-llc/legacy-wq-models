@@ -35,12 +35,7 @@ class TestInput:
     def test_uprbnd(self):
         t_in = io.Input(upper_bound=15)
         assert t_in.get_typical() == 'N/A - 15'
-    
-    def test_set_value(self):
-        t_in = io.Input(value=15)
-        t_in.set_value(6)
-        assert t_in.get_value() == 6
-        
+          
     def test_value_str(self):
         t_in = io.Input(value='DUE')
         assert t_in.get_value() == 'DUE'
@@ -50,6 +45,18 @@ class TestInput:
         t_in.name_iter()
         assert t_in.get_name() == '2'
         
+
+class TestInput0D:
+    def test_set_value(self):
+        t_in = io.Input0D(value=15)
+        t_in.set_value(6)
+        assert t_in.get_value() == 6
+    def test_value_check(self):
+        t_in = io.Input0D(value=15, lower_bound=10, upper_bound=20)
+        assert t_in.get_typical() == '10 - 20'
+        assert t_in.value_check() == True
+        t_in.set_value(4)
+        assert t_in.value_check() == False        
 
 class TestInput1D:
     def test_input1d(self):
@@ -149,7 +156,7 @@ class TestOutput3D:
         
 class TestInOutContainer:
     def test_append_remove(self):
-        t_in_cont = io.InOutContainer('all')
+        t_in_cont = io.Container('all')
         t_in1 = io.Input(name='var_in1',
                         value=5,
                         default=7,
@@ -164,7 +171,7 @@ class TestInOutContainer:
         t_in_cont.remove_by_name('var_in1')
         assert t_in_cont.size == 1
     def test_mult_append(self):
-        t_in_cont = io.InOutContainer('all',
+        t_in_cont = io.Container('all',
                                       description='description of all items in container')
         t_in1 = io.Input0D(name='var_in1') 
         t_in2 = io.Input0D(name='var_in2') 
@@ -176,7 +183,7 @@ class TestInOutContainer:
         assert t_in_cont.size == 3
         assert t_in_cont.get_contents_names() == ['var_in1', 'var_in2', 'var_in3']
     def test_get_contents(self):
-        t_in_cont = io.InOutContainer('all')
+        t_in_cont = io.Container('all')
         t_in1 = io.Input(name='var_in1',
                         value=5,
                         default=7,
