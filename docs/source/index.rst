@@ -15,5 +15,5 @@ legacy-wq-models is a Python project that provides a framework for water quality
 Indices and tables
 ------------------
 .. toctree::
-   modules
    pySTFATE
+   modules
