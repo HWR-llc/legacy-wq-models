@@ -16,11 +16,6 @@ Using legacy-wq-models, the newly compiled models offer three primary benefits:
 
 legacy-wq-models includes a set of classes and functions that simplify the inclusion of numerical models into the project, facilitate pre-processing and post-processing code development, and provide **provenance** to the model source files.
 
-legacy-wq-models currently includes the numerical models: 
-
- - [STFATE](https://dots.el.erdc.dren.mil/training/2019-03-06_DredgingSeminar/03_08_2019_1400_Schroeder_Hayes_STFATE.pdf)
- - other model
-
 ### Documentation
 model documentation
 - [pySTFATE](C:\HWR_source\legacy-wq-models\docs\build\html\pySTFATE.html)
