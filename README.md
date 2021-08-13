@@ -22,16 +22,20 @@ legacy-wq-models currently includes the numerical models:
  - other model
 
 ### Documentation
-If you want to add a new model to legacy-wq-models, develop a new user interface, or post-processing function, you should read the documentation.
+model documentation
+- [pySTFATE](C:\HWR_source\legacy-wq-models\docs\build\html\pySTFATE.html)
+- model 2
 
-If you want to run an existing model, you can read the model use documentation.
+[legacy-wq-models](C:\HWR_source\legacy-wq-models\docs\build\html\index.html)
+
+legacy-wq-models  documentation
+
+*If you want to add a new model to legacy-wq-models, develop a new user interface, or post-processing function, you should read the documentation. If you want to run an existing model, you can read the model use documentation.*
 
 ### Installation
-legacy-wq-models is being developed using Anaconda and we recommend installation with [Anaconda](https://www.anaconda.com/) or [miniconda](https://docs.conda.io/en/latest/miniconda.html). Follow these steps to install legacy-wq-models.
+The legacy-wq-models package is being developed using [Anaconda](https://www.anaconda.com/). Assuming you are working with Anaconda and Python 3, the legacy-wq-models package can be installed by connecting to the [repo](https://github.com/HWR-llc/legacy-wq-models.git), navigating to the directory and running `python setup.py`.  You may need to conda a few supporting packages, but I will address this prior to releasing the first complete version. 
 
- 1. Step 1
- 2. Step 2
- 3. ...
+It is important to point out that installing legacy-wq-models will not make it possible to run any of the Fortran models. Instructions/an installer for that is forthcoming...
 
 #### Disclaimer
 This code is under active development. This project includes Fortran source files that were originally developed by organizations including the United States Army Corps of Engineers ERDC. Use of the source files should not be considered endorsement by the ERDC or any other organization.  
