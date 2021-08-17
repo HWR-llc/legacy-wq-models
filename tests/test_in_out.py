@@ -6,6 +6,7 @@ Designed to be run with py.test
 
 import pytest
 import pdb
+import numpy as np
 
 from legacy_wq_models import in_out as io
 
@@ -62,21 +63,81 @@ class TestInput1D:
     def test_input1d(self):
         t_in = io.Input1D(n=8)
         assert t_in.get_value().size == 8
-        assert t_in.get_value().dtype == 'float'
-        
+        assert t_in.get_value().dtype == 'float'       
     def test_dtype(self):
         t_in = io.Input1D(n=8, dtype='int')
         assert t_in.get_value().dtype == 'int'
-        
+    def test_value(self):
+        t_in = io.Input1D(value=[15, 13, 22])
+        assert t_in.n == 3
+        assert t_in.get_value()[0] == 15
+        assert t_in.get_value()[1] == 13
+        assert t_in.get_value()[2] == 22
+    def test_value_error(self):
+        try:
+            t_in = io.Input1D(value=[15, 13, 'dad'])
+        except ValueError:
+            catch_valerr = True
+        assert catch_valerr == True
+    def test_set_value(self):
+        t_in = io.Input1D(n=8, dtype='int', name='test')
+        try:
+            t_in.set_value([123, 345,567])
+        except ValueError:
+            catch_valerr = True
+        assert catch_valerr == True        
 
 class TestInput2D:
     def test_input2d(self):
         t_in = io.Input2D(m=8, n=3)
         assert t_in.get_value().shape == (8, 3)
-
     def test_dtype(self):
         t_in = io.Input2D(m=8, n=3, dtype='int')
         assert t_in.get_value().dtype == 'int'
+    def test_value_list(self):
+        t_in = io.Input2D(value=[[15, 13, 22],
+                                 [25, 23, 32]])
+        assert t_in.m == 2
+        assert t_in.n == 3
+        # pdb.set_trace()
+        assert t_in.get_value()[1, 0] == 25
+        assert t_in.get_value()[1, 1] == 23
+        assert t_in.get_value()[1, 2] == 32
+    def test_value_tuple(self):
+        t_in = io.Input2D(value=((15, 13, 22),
+                                 (25, 23, 32)))
+        assert t_in.m == 2
+        assert t_in.n == 3
+        # pdb.set_trace()
+        assert t_in.get_value()[1, 0] == 25
+        assert t_in.get_value()[1, 1] == 23
+        assert t_in.get_value()[1, 2] == 32 
+    def test_value_numpy_array(self):
+        t_in = io.Input2D(value=np.array(((15, 13, 22),
+                                 (25, 23, 32))))
+        assert t_in.m == 2
+        assert t_in.n == 3
+        # pdb.set_trace()
+        assert t_in.get_value()[1, 0] == 25
+        assert t_in.get_value()[1, 1] == 23
+        assert t_in.get_value()[1, 2] == 32 
+    def test_value_error(self):
+        try:
+            t_in = io.Input2D(value=[[15, 13, 'dad'],
+                                     [15, 13, 25]])
+        except ValueError:
+            catch_valerr = True
+        assert catch_valerr == True
+    def test_set_value(self):
+        t_in = io.Input2D(m=4, n=8, dtype='int', name='test')
+        try:
+            t_in.set_value([[111, 222, 333],
+                            [777, 888, 999]])
+        except ValueError:
+            catch_valerr = True
+        assert catch_valerr == True   
+
+
 
 class TestInput3D:
     def test_input3d(self):

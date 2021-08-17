@@ -148,12 +148,35 @@ class Input1D(Input):
                                       typical,
                                       description)
         
-        if n > 0:
-            self.set_value(n, dtype)
+        if value is not None:
+            value_len = len(value)
+            if (n != 0) and (value_len != n):
+                print('warning: n and length of value do not match, value used')
+            if not all(isinstance(x, type(value[0])) for x in value):
+                message ='value does not have consistent dtype'
+                raise ValueError(message)
+            self.__set_value_dims(len(value), type(value[0]))
+            self.set_value(value)
+        else:
+            if n > 0:
+                self.__set_value_dims(n, dtype)
         
         
-    def set_value(self, n, dtype):
+    def __set_value_dims(self, n, dtype):
         self.value = np.zeros(n, dtype=dtype)
+        self.n = n
+        self.dtype = dtype        
+
+    def set_value(self, value):
+        if self.n == 0:
+            self.__set_value_dims(len(value), type(value[0]))
+        if self.n == len(value):
+            for i in range(0, len(value)):
+                self.value[i] = value[i]
+        else:
+            message = self.get_name() + '- dimensions already defined'
+            raise ValueError(message)
+
         
     def value_check(self):
         print('method for checking values in array')
@@ -181,12 +204,59 @@ class Input2D(Input):
                                       typical,
                                       description)
         
-        if n > 0 and m > 0:
-            self.set_value(m, n, dtype)
+        if value is not None:
+            if type(value) == tuple or type(value) == list:
+                val_m = len(value)
+                val_n = len(value[0])
+                val_type = type(value[0][0])
+                print('tuple or list')
+            elif type(value)  == np.ndarray:
+                val_m, val_n = value.shape
+                val_type = type(value[0,0])
+                print('numpy')
+            else:
+                message = 'value dtype not recognized'
+                raise ValueError(message)
+            if ((m != 0) and (m != val_m)) or ((n != 0) and (n != val_n)):
+                print('warning: m, n and value dims do not match, value used')
+            for row in value:
+                if not all(isinstance(x, val_type) for x in row):
+                    message ='value does not have consistent dtype'
+                    raise ValueError(message)
+            self.__set_value_dims(val_m, val_n, val_type)
+            self.set_value(value)
+        else:
+            if m > 0 and n > 0:
+                self.__set_value_dims(m, n, dtype)
         
-    def set_value(self, m, n, dtype):
+        
+    def __set_value_dims(self, m, n, dtype):
         self.value = np.zeros((m, n), dtype=dtype)
-        
+        self.m = m
+        self.n = n
+        self.dtype = dtype        
+
+    def set_value(self, value):
+        if type(value) == tuple or type(value) == list:
+            val_m = len(value)
+            val_n = len(value[0])
+            val_type = type(value[0][0])
+        elif type(value)  == np.ndarray:
+            val_m, val_n = value.shape
+            val_type = type(value[0,0])
+        else:
+            message = 'value dtype not recognized'
+            raise ValueError(message)
+        if self.m == 0 and self.n == 0:
+            self.__set_value_dims(val_m, val_n, val_type)
+        if self.m == val_m and self.n == val_n:
+            for i in range(0, val_m):
+                for j in range(0, val_n):
+                    self.value[i,j] = value[i][j]                
+        else:
+            message = self.get_name() + '- dimensions already defined and do not match'
+            raise ValueError(message)                
+               
     def value_check(self):
         print('method for checking values in array')
 

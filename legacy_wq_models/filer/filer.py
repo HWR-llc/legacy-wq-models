@@ -92,7 +92,7 @@ class InOutFile():
         self.location = new_location
         self.update_full_path()
 
-class InputFile():
+class InputFile(InOutFile):
     """
     File that will be read by model that includes model inputs
     """    
@@ -102,9 +102,9 @@ class InputFile():
                  extension='txt',
                  description=''):
         super(InputFile, self).__init__(name,
-                                      location,
-                                      extension,
-                                      description)
+                                        location,
+                                        extension,
+                                        description)
        
     # create file
     def create_file():
@@ -114,7 +114,7 @@ class InputFile():
         """
         print('placeholder function only')
 
-class OutputFile():
+class OutputFile(InOutFile):
     """
     File that will be read by model that includes model inputs
     """    
@@ -123,7 +123,7 @@ class OutputFile():
                  location='',
                  extension='txt',
                  description=''):
-        super(InputFile, self).__init__(name,
+        super(OutputFile, self).__init__(name,
                                       location,
                                       extension,
                                       description)

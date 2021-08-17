@@ -47,5 +47,25 @@ class TestInOutFile:
         cur_dir = os.getcwd()
         full_path = os.path.join(cur_dir, 'test_name.inp')
         assert f_in.get_full_path() == full_path
-                
         
+class TestInputFile:
+    def test_file(self):
+        f_in = filer.InputFile(name='test_input',
+                               location='',
+                               extension='inp',
+                               description='brief description of test_input file')
+        assert f_in.get_name() == 'test_input'
+        assert f_in.get_location() == ''
+        assert f_in.get_extension() == 'inp'
+        assert f_in.get_description() == 'brief description of test_input file'
+                
+class TestOutputFile:
+    def test_file(self):
+        f_in = filer.OutputFile(name='test_output',
+                               location='',
+                               extension='out',
+                               description='brief description of test_output file')
+        assert f_in.get_name() == 'test_output'
+        assert f_in.get_location() == ''
+        assert f_in.get_extension() == 'out'
+        assert f_in.get_description() == 'brief description of test_output file'        

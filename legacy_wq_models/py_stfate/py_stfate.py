@@ -152,6 +152,16 @@ nzd1 = io.Input0D(name='NZD1',
 nzd2 = io.Input0D(name='NZD2',
                   description="""ZONE OF INITIAL DILUTION BOUNDARIES [FOR ACUTE TOX]
                                  LAST N INDEX type=integer""")
+xmzd1 = io.Input0D(name='XMZD1',
+                  description="""SEE MZD1 type=integer""")
+xmzd2 = io.Input0D(name='XMZD2',
+                  description="""SEE MZD2 type=integer""")
+xnzd1 = io.Input0D(name='XNZD1',
+                  description="""SEE NZD1 type=integer""")
+xnzd2 = io.Input0D(name='XNZD2',
+                  description="""SEE NZD2 type=integer""")
+
+
 ipcn = io.Input0D(name='IPCN',
                   default=1,
                   lower_bound=0,
@@ -222,6 +232,8 @@ dhole = io.Input0D(name='DHOLE',
 z0 = io.Input0D(name='Z0',
                 description="""HEIGHT OF BOTTOM ROUGHNESS FT. type=float""")
 nroa = io.Input0D(name='NROA',
+                  lower_bound=0,
+                  upper_bound=5,
                   description="""NUMBER OF POINTS IN VERTICAL DENSITY PROFILE 
                                  type=integer """)
 y = io.Input1D(name='Y',
@@ -412,6 +424,7 @@ tprt = io.Input1D(name='TPRT',
 all_inputs = [due_in_flag, itype, id_, nmax, mmax, ns, nlayer, ibins, nzsect,
               mzsect, key1, key2, key3, jbfc, isep, izid, iprit, mds1, mds2, 
               nds1, nds2, xmds1, xmds2, xnds1, xnds2, mzd1, mzd2, nzd1, nzd2,
+              xmzd1, xmzd2, xnzd1, xnzd2,
               ipcn, ipcl, iplt, n, nverts, ypos, depc, dx, dz, idep, depth,
               xbarge, zbarge, slopex, slopey, xhole, zhole, dhole, z0, nroa,
               y, roa, iform, du1, du2, uu1, uu2, dw1, dw2, ww1, ww2, vax, vaz,
@@ -430,3 +443,162 @@ class PySTFATE(model.Model):
                                    description="""Short Term Fate of Dredged
                                                   Material in Open Water Model""")
         self.inputs.multi_append(all_inputs)
+        self.input_files.append(filer.InputFile(name='DUE',
+                                                location='',
+                                                extension='due',
+                                                description='executable data file for DIFID.for'))
+        
+    # methods
+    def read_input_file(self, key, path):
+        if key == 'DUE':
+            due = open(path, 'r')
+            cur_line = due.readline().split()
+            if cur_line[1] == '1':
+                print('STFATE hopper simulation will be loaded')
+            elif cur_line[1]  == '3':
+                print('STFATE barge simulation will be loaded')
+            else:
+                message = cur_line[1] + '- STFATE simulation type not recognized'
+                raise model.InputError(message)
+            # line: 1
+            self.inputs.contents['DUE_IN'].set_value(cur_line[0])
+            self.inputs.contents['ITYPE'].set_value(int(cur_line[0]))
+            itype = self.inputs.contents['ITYPE'].get_value()                    
+            # line: 2
+            cur_line = due.readline()
+            self.inputs.contents['id_'].set_value(cur_line)
+            # line: 3
+            cur_line = due.readline.split()
+            self.inputs.contents['NMAX'].set_value(int(cur_line[0]))           
+            self.inputs.contents['MMAX'].set_value(int(cur_line[1]))                  
+            self.inputs.contents['NS'].set_value(int(cur_line[2])) 
+            self.inputs.contents['NLAYER'].set_value(int(cur_line[3]))
+            self.inputs.contents['IBINS'].set_value(int(cur_line[4]))
+            self.inputs.contents['NZSECT'].set_value(int(cur_line[5]))
+            self.inputs.contents['MZSECT'].set_value(int(cur_line[6]))
+            # line: 4
+            cur_line = due.readline().split()
+            self.inputs.contents['KEY1'].set_value(int(cur_line[0]))             
+            self.inputs.contents['KEY2'].set_value(int(cur_line[1]))              
+            self.inputs.contents['KEY3'].set_value(int(cur_line[2]))            
+            self.inputs.contents['JBFC'].set_value(int(cur_line[3]))              
+            self.inputs.contents['ISEP'].set_value(int(cur_line[4]))
+            self.inputs.contents['IZID'].set_value(int(cur_line[5]))
+            self.inputs.contents['IPRIT'].set_value(int(cur_line[6]))
+            # line: 5
+            cur_line = due.readline.split()
+            self.inputs.contents['MDS1'].set_value(int(cur_line[0]))
+            self.inputs.contents['MDS2'].set_value(int(cur_line[1]))
+            self.inputs.contents['NDS1'].set_value(int(cur_line[2]))
+            self.inputs.contents['NDS2'].set_value(int(cur_line[3]))
+            # line: 6
+            cur_line = due.readline.split()
+            self.inputs.contents['XMDS1'].set_value(float(cur_line[0]))            
+            self.inputs.contents['XMDS2'].set_value(float(cur_line[1])) 
+            self.inputs.contents['XNDS1'].set_value(float(cur_line[2])) 
+            self.inputs.contents['XNDS2'].set_value(float(cur_line[3])) 
+            # conditional read for acute toxicity
+            key3 = self.inputs['KEY3'].get_value()
+            izid = self.inputs['IZID'].get_value()
+            if (key3 > 4):
+                if (izid == 1) or (izid == 2):
+                    print('reading acute toxicity input information')
+                    cur_line = due.readline().split()
+                    self.inputs.contents['MZD1'].set_value(int(cur_line[0]))               
+                    self.inputs.contents['MZD2'].set_value(int(cur_line[1]))
+                    self.inputs.contents['NZD1'].set_value(int(cur_line[2]))
+                    self.inputs.contents['NZD2'].set_value(int(cur_line[3]))
+                    cur_line = due.readline().split()
+                    self.inputs.contents['XMZD1'].set_value(int(cur_line[0]))               
+                    self.inputs.contents['XMZD2'].set_value(int(cur_line[1]))
+                    self.inputs.contents['XNZD1'].set_value(int(cur_line[2]))
+                    self.inputs.contents['XNZD2'].set_value(int(cur_line[3]))     
+            # line: 7
+            cur_line = due.readline().split()
+            self.inputs.contents['IPCN'].set_value(int(cur_line[0]))
+            self.inputs.contents['IPCL'].set_value(int(cur_line[1]))
+            self.inputs.contents['IPLT'].set_value(int(cur_line[2]))
+            self.inputs.contents['N'].set_value(int(cur_line[3]))
+            # line: 8
+            cur_line = due.readline().split()
+            self.inputs.contents['NVERTS'].set_value(int(cur_line[0]))
+            # line: 9
+            # assumes ypos has 10 entries or less
+            cur_line = due.readline().split()
+            ypos_list = []
+            for i in range(0, len(cur_line)):
+                ypos_list.append(float(cur_line[i]))
+            self.inputs.contents['YPOS'].set_value(ypos_list)
+            # line 10 
+            cur_line = due.readline().split()
+            self.inputs.contents['DEPC'].set_value(float(cur_line[0]))
+            self.inputs.contents['DX'].set_value(float(cur_line[1]))
+            self.inputs.contents['DZ'].set_value(float(cur_line[2]))
+            # line 11
+            cur_line = due.readline.split()
+            self.inputs.contents['IDEP'].set_value(int(cur_line[0]))
+            # conditional read for variable depth simulations
+            idep = self.inputs.contents['IDEP'].get_value()
+            if idep != 1:
+                print('reading variable depth information')
+                # note: indices (n, m) are reversed for STFATE relative to legacy-wq-models
+                nmax = self.inputs.contents['NMAX'].get_value()
+                mmax = self.inputs.contents['MMAX'].get_value()
+                tmp_value = []
+                for n in range(0, mmax):
+                    tmp_row = []
+                    m_index = 0
+                    while m_index < nmax:                        
+                        cur_line = due.readline().split()
+                        for d in cur_line:
+                            tmp_row.append(float(d))
+                            m_index += 1
+                    tmp_value.append(tmp_row)
+                self.inputs.contents['DEPTH'].set_value(tmp_value)
+            # line: 12
+            cur_line = due.readline().split()
+            self.inputs.contents['XBARGE'].set_value(float(cur_line[0]))
+            self.inputs.contents['ZBARGE'].set_value(float(cur_line[1]))
+            self.inputs.contents['SLOPEX'].set_value(float(cur_line[2]))            
+            self.inputs.contents['SLOPEY'].set_value(float(cur_line[3]))                
+            self.inputs.contents['XHOLE'].set_value(float(cur_line[4]))                
+            self.inputs.contents['ZHOLE'].set_value(float(cur_line[5]))              
+            self.inputs.contents['DHOLE'].set_value(float(cur_line[6]))
+            # line: 13
+            cur_line = due.readline().split()
+            self.inputs.contents['Z0'].set_value(float(cur_line[0]))
+            # line: 14
+            cur_line = due.readline().split()
+            self.inputs.contents['NROA'].set_value(int(cur_line[0]))
+            # line: 15
+            # NROA maxed at 5
+            cur_line = due.readline().split()
+            y_list = []
+            for i in range(0, len(cur_line)):
+                y_list.append(float(cur_line[i]))
+            self.inputs.contents['Y'].set_value(y_list)
+            # line: 16
+            cur_line = due.readline().split()
+            roa_list = []
+            for i in range(0, len(cur_line)):
+                roa_list.append(float(cur_line[i]))
+            self.inputs.contents['ROA'].set_value(roa_list)
+            # line: 17
+            cur_line = due.readline().split()
+            self.inputs.contents['IFORM'].set_value(int(cur_line[0]))
+            # line: 18
+            
+
+
+
+
+
+
+
+
+            
+            pdb.set_trace()
+        elif key == 'OTHER':
+            print('placeholder for additional inputs')
+        else:
+            print('wrong key given')
