@@ -148,6 +148,8 @@ class Input1D(Input):
                                       typical,
                                       description)
         
+        self.n = n
+        self.dtype = dtype
         if value is not None:
             value_len = len(value)
             if (n != 0) and (value_len != n):
@@ -317,7 +319,9 @@ class InputStructured(Input):
                                       description)
         self._fields = fields
         self._dtypes = dtypes
-        self.set_rows(rows)
+        if rows > 0:
+            self.rows = rows
+            self.set_rows(rows)
 
         
     def set_rows(self, rows):
@@ -327,7 +331,11 @@ class InputStructured(Input):
     def set_value(self, new_value):
         if len(new_value) == self.value.size:
             for i in range(0,len(new_value)):
-                self.value[i] = new_value[i]
+                if len(new_value[i]) == len(self.value[i]):
+                    self.value[i] = new_value[i]
+                else: 
+                    for j in range(0, len(new_value[i])):
+                        self.value[i][j] = new_value[i][j]
         else:
             print('raise error')
                 
@@ -496,8 +504,11 @@ class Container():
         for key in self.contents:
             return_list.append(self.contents[key].get_name())
         return return_list
-    def get_contents(self):
-        return self.contents
+    def get_contents(self, copy=False):
+        if copy == False:
+            return self.contents
+        else:
+            return copy.copy(self.contents)
     
 # functions
 def hello():

@@ -283,6 +283,12 @@ vaz = io.Input0D(name='VAZ',
 d = io.Input0D(name='D',
                description="""DEPTH AT LOCATION OF VELOCITY MEASURMENT
                               type=float""")
+u = io.Input2D(name='U',
+               description="""TIME CONSTANT SPATIAL VARIABLE U VELOCITY COMPONENT
+                              U(N,M) type=2-D numpy array""")
+w = io.Input2D(name='W',
+               description="""TIME CONSTANT SPATIAL VARIABLE W VELOCITY COMPONENT
+                              W(N,M) type=2-D numpy array""")
 tstop = io.Input0D(name='TSTOP',
                    description="""TIME (SEC) OF THE SIMULATION. IF KEY3=2,3,4,
                                   SET TO 14400. IF KEY3=5,6,7 AND EITHER A 
@@ -293,6 +299,9 @@ tstop = io.Input0D(name='TSTOP',
 dtl = io.Input0D(name='DTL',
                  description="""LONG TERM TIME STEP (SEC)..(X-VEL*DTL .LE. DX)
                                 (Z-VEL*DTL .LE. DZ) type=integer""")
+trel = io.Input0D(name='TREL',
+                  description="""TIME REQUIRED FOR MATERIAL TO LEAVE THE BARGE 
+                                 (SEC) type=float""")
 bargl = io.Input0D(name='BARGL',
                    description="""LENGTH OF BARGE (FT) type=float""")
 bargw = io.Input0D(name='BARGW',
@@ -303,6 +312,12 @@ drel2 = io.Input0D(name='DREL2',
                    description="""UNLOADED DRAFT OF THE BARGE (FT) type=float""")
 fden = io.Input0D(name='FDEN',
                   description="""DENSITY OF WATER AT DREDGING SITE type=float""")
+tdis = io.Input0D(name='TDIS',
+                  description="""DISTANCE BETWEEN HOPPER BINS (FT) type=float""")
+binl = io.Input0D(name='BINL',
+                  description="""LENGTH OF BINS (FT) type=float""")
+binw = io.Input0D(name='BINW',
+                  description="""WIDTH OF BINS (FT) type=float""")
 alpha0 = io.Input0D(name='ALPHA0',
                     default=0.235,
                     description="""CONV DESCENT ENTRAINMENT COEFF..(0.235)
@@ -353,18 +368,18 @@ aky0 = io.Input0D(name='AKY0',
 cstrip = io.Input0D(name='CSTRIP',
                     description="""COEFIEIENT CONTROLLING STRIPPING OF FINES
                                    DURING CONVECTIVE DESCENT type=float""")
-cu = io.Input0D(name='CU',
+cu = io.Input1D(name='CU',
                 description="""X VELOCITY OF THE BARGE (FT/SEC) type=float
                                note: identified as CU(1) in DIFID, may be
                                1-D array""")
-cw = io.Input0D(name='CW',
+cw = io.Input1D(name='CW',
                 description="""Z VELOCITY OF THE BARGE (FT/SEC) type=float
                                note: identified as CW(1) in DIFID, may be
                                1-D array""")
 volm = io.Input1D(name='VOLM',
                   description="""VOLUME OF MATERIAL IN THE CONVECTING CLOUD
                                  (CU YD) type=1-d numpy array""")
-amll = io.Input0D(name='AMLL',
+amll = io.Input1D(name='AMLL',
                   description="""MULTIPLE OF THE LIQUID LIMIT OF MATERIAL
                                  - ONLY USED IF JBFC = 1 type=float""")
 param = io.Container(name='PARAM',
@@ -406,9 +421,7 @@ param_1 = io.InputStructured(['PARAM', 'ROAS', 'CS', 'VFALL', 'VOIDS', 'TAUCR', 
                              name='1',
                              description='see container')
 param.append(param_1)
-paramtr = io.Input1D(name='PARAMTR',
-                     description="""IDENTIFIER OF CONSERVATIVE TRACER
-                                    type=1-D numpy array (string)""")
+
 cinit = io.Input0D(name='CINIT',
                    description="""CONCENTRATION OF THE TRACER IN THE BARGE (MG/L)
                                   type=float""")
@@ -424,13 +437,13 @@ tprt = io.Input1D(name='TPRT',
 all_inputs = [due_in_flag, itype, id_, nmax, mmax, ns, nlayer, ibins, nzsect,
               mzsect, key1, key2, key3, jbfc, isep, izid, iprit, mds1, mds2, 
               nds1, nds2, xmds1, xmds2, xnds1, xnds2, mzd1, mzd2, nzd1, nzd2,
-              xmzd1, xmzd2, xnzd1, xnzd2,
-              ipcn, ipcl, iplt, n, nverts, ypos, depc, dx, dz, idep, depth,
-              xbarge, zbarge, slopex, slopey, xhole, zhole, dhole, z0, nroa,
-              y, roa, iform, du1, du2, uu1, uu2, dw1, dw2, ww1, ww2, vax, vaz,
-              d, tstop, dtl, bargl, bargw, drel1, drel2, fden, alpha0, beta,
-              cm, cd, gama, cdrag, cfric, cd3, cd4, alphac, frictn, alamda, aky0,
-              cstrip, cu, cw, volm, amll, param, paramtr, cinit, cback, tprt]
+              xmzd1, xmzd2, xnzd1, xnzd2, ipcn, ipcl, iplt, n, nverts, ypos, 
+              depc, dx, dz, idep, depth, xbarge, zbarge, slopex, slopey, xhole,
+              zhole, dhole, z0, nroa, y, roa, iform, du1, du2, uu1, uu2, dw1, 
+              dw2, ww1, ww2, vax, vaz, d, u, w, tstop, dtl, trel, bargl, bargw,
+              drel1, drel2, fden, tdis, binl, binw, alpha0, beta, cm, cd, gama,
+              cdrag, cfric, cd3, cd4, alphac, frictn, alamda, aky0,
+              cstrip, cu, cw, volm, amll, param, cinit, cback, tprt]
 
 # STFATE model class
 class PySTFATE(model.Model):
@@ -462,13 +475,13 @@ class PySTFATE(model.Model):
                 raise model.InputError(message)
             # line: 1
             self.inputs.contents['DUE_IN'].set_value(cur_line[0])
-            self.inputs.contents['ITYPE'].set_value(int(cur_line[0]))
+            self.inputs.contents['ITYPE'].set_value(int(cur_line[1]))
             itype = self.inputs.contents['ITYPE'].get_value()                    
             # line: 2
             cur_line = due.readline()
-            self.inputs.contents['id_'].set_value(cur_line)
+            self.inputs.contents['ID'].set_value(cur_line)
             # line: 3
-            cur_line = due.readline.split()
+            cur_line = due.readline().split()
             self.inputs.contents['NMAX'].set_value(int(cur_line[0]))           
             self.inputs.contents['MMAX'].set_value(int(cur_line[1]))                  
             self.inputs.contents['NS'].set_value(int(cur_line[2])) 
@@ -486,20 +499,20 @@ class PySTFATE(model.Model):
             self.inputs.contents['IZID'].set_value(int(cur_line[5]))
             self.inputs.contents['IPRIT'].set_value(int(cur_line[6]))
             # line: 5
-            cur_line = due.readline.split()
+            cur_line = due.readline().split()
             self.inputs.contents['MDS1'].set_value(int(cur_line[0]))
             self.inputs.contents['MDS2'].set_value(int(cur_line[1]))
             self.inputs.contents['NDS1'].set_value(int(cur_line[2]))
             self.inputs.contents['NDS2'].set_value(int(cur_line[3]))
             # line: 6
-            cur_line = due.readline.split()
+            cur_line = due.readline().split()
             self.inputs.contents['XMDS1'].set_value(float(cur_line[0]))            
             self.inputs.contents['XMDS2'].set_value(float(cur_line[1])) 
             self.inputs.contents['XNDS1'].set_value(float(cur_line[2])) 
             self.inputs.contents['XNDS2'].set_value(float(cur_line[3])) 
             # conditional read for acute toxicity
-            key3 = self.inputs['KEY3'].get_value()
-            izid = self.inputs['IZID'].get_value()
+            key3 = self.inputs.contents['KEY3'].get_value()
+            izid = self.inputs.contents['IZID'].get_value()
             if (key3 > 4):
                 if (izid == 1) or (izid == 2):
                     print('reading acute toxicity input information')
@@ -535,7 +548,7 @@ class PySTFATE(model.Model):
             self.inputs.contents['DX'].set_value(float(cur_line[1]))
             self.inputs.contents['DZ'].set_value(float(cur_line[2]))
             # line 11
-            cur_line = due.readline.split()
+            cur_line = due.readline().split()
             self.inputs.contents['IDEP'].set_value(int(cur_line[0]))
             # conditional read for variable depth simulations
             idep = self.inputs.contents['IDEP'].get_value()
@@ -587,17 +600,134 @@ class PySTFATE(model.Model):
             cur_line = due.readline().split()
             self.inputs.contents['IFORM'].set_value(int(cur_line[0]))
             # line: 18
-            
-
-
-
-
-
-
-
-
-            
-            pdb.set_trace()
+            # conditional read for variable velocity across grid
+            iform = self.inputs.contents['IFORM'].get_value()
+            if iform == 4:
+                print('reading variable velocity information')
+                # note: indices (n, m) are reversed for STFATE relative to legacy-wq-models
+                nmax = self.inputs.contents['NMAX'].get_value()
+                mmax = self.inputs.contents['MMAX'].get_value()
+                vel_comps = ['U', 'V']
+                for comp in vel_comps:                    
+                    tmp_value = []
+                    for n in range(0, mmax):
+                        tmp_row = []
+                        m_index = 0
+                        while m_index < nmax:                        
+                            cur_line = due.readline().split()
+                            for d in cur_line:
+                                tmp_row.append(float(d))
+                                m_index += 1
+                        tmp_value.append(tmp_row)
+                    self.inputs.contents[comp].set_value(tmp_value)
+            elif iform == 1 or iform == 2:
+                cur_line = due.readline().split()
+                self.inputs.contents['VAX'].set_value(float(cur_line[0]))
+                self.inputs.contents['VAZ'].set_value(float(cur_line[1]))
+                self.inputs.contents['D'].set_value(float(cur_line[2]))
+            else:
+                cur_line = due.readline().split()
+                self.inputs.contents['DU1'].set_value(float(cur_line[0]))                
+                self.inputs.contents['DU2'].set_value(float(cur_line[1]))                
+                self.inputs.contents['UU1'].set_value(float(cur_line[2]))
+                self.inputs.contents['UU2'].set_value(float(cur_line[3]))
+                self.inputs.contents['DW1'].set_value(float(cur_line[4]))
+                self.inputs.contents['DW2'].set_value(float(cur_line[5]))
+                self.inputs.contents['WW1'].set_value(float(cur_line[6]))
+                self.inputs.contents['WW2'].set_value(float(cur_line[7]))
+            # line: 19
+            cur_line = due.readline().split()
+            self.inputs.contents['TSTOP'].set_value(float(cur_line[0]))
+            self.inputs.contents['DTL'].set_value(float(cur_line[1]))
+            self.inputs.contents['TREL'].set_value(float(cur_line[2]))
+            # line: 20
+            cur_line = due.readline().split()
+            self.inputs.contents['BARGL'].set_value(float(cur_line[0]))            
+            self.inputs.contents['BARGW'].set_value(float(cur_line[1]))             
+            self.inputs.contents['DREL1'].set_value(float(cur_line[2]))
+            self.inputs.contents['DREL2'].set_value(float(cur_line[3]))            
+            self.inputs.contents['FDEN'].set_value(float(cur_line[4])) 
+            # conditional for hopper
+            if itype == 1:
+                self.inputs.contents['TDIS'].set_value(float(cur_line[5]))
+                self.inputs.contents['BINL'].set_value(float(cur_line[6]))            
+                self.inputs.contents['BINW'].set_value(float(cur_line[7]))
+            # line: 21
+            cur_line = due.readline().split()
+            self.inputs.contents['ALPHA0'].set_value(float(cur_line[0]))            
+            self.inputs.contents['BETA'].set_value(float(cur_line[1]))             
+            self.inputs.contents['CM'].set_value(float(cur_line[2]))
+            self.inputs.contents['CD'].set_value(float(cur_line[3]))
+            # line: 22
+            cur_line = due.readline().split()
+            self.inputs.contents['GAMA'].set_value(float(cur_line[0]))            
+            self.inputs.contents['CDRAG'].set_value(float(cur_line[1]))             
+            self.inputs.contents['CFRIC'].set_value(float(cur_line[2]))
+            self.inputs.contents['CD3'].set_value(float(cur_line[3]))            
+            self.inputs.contents['CD4'].set_value(float(cur_line[4]))             
+            self.inputs.contents['ALPHAC'].set_value(float(cur_line[5]))
+            self.inputs.contents['FRICTN'].set_value(float(cur_line[6])) 
+            # line: 23
+            cur_line = due.readline().split()
+            self.inputs.contents['ALAMDA'].set_value(float(cur_line[0]))            
+            self.inputs.contents['AKY0'].set_value(float(cur_line[1]))             
+            self.inputs.contents['CSTRIP'].set_value(float(cur_line[2]))   
+            # line: 24 - to end of solids
+            nlayer = self.inputs.contents['NLAYER'].get_value()
+            jbfc = self.inputs.contents['JBFC'].get_value()
+            ns = self.inputs.contents['NS'].get_value()
+            cu_list = []
+            cw_list = []
+            volm_list = []
+            amll_list = []
+            for nlay in range(0, nlayer):                
+                cur_line = due.readline().split()
+                cu_list.append(float(cur_line[0]))
+                cw_list.append(float(cur_line[1]))
+                volm_list.append(float(cur_line[2]))
+                if jbfc == 1:
+                    amll_list.append(float(cur_line[3]))
+                tmp_value = []
+                for nsub in range(0, ns):
+                    cur_line = due.readline().split()
+                    tmp_row = (cur_line[0],
+                               float(cur_line[1]),
+                               float(cur_line[2]),
+                               float(cur_line[3]),
+                               float(cur_line[4]),
+                               float(cur_line[5]),
+                               int(cur_line[6]),
+                               int(cur_line[7]),
+                               int(cur_line[8]))                   
+                    tmp_value.append(tmp_row)
+                key3 = self.inputs.contents['KEY3'].get_value()
+                if key3 > 0:
+                    cur_line = due.readline().split()
+                    tmp_row = (cur_line[0],
+                               float(cur_line[1]),
+                               float(cur_line[2]),
+                               float(cur_line[3]),
+                               float(cur_line[4]),
+                               float(cur_line[5]))
+                    tmp_value.append(tmp_row)
+                if nlay == 0:
+                    self.inputs.contents['PARAM'].contents['1'].set_rows(len(tmp_value))
+                    self.inputs.contents['PARAM'].contents['1'].set_value(tmp_value)
+                else:
+                    param_names = sorted(self.inputs.contents['PARAM'].get_contents_names())
+                    last_name = sorted(param_names)[-1]
+                    input_structure = self.inputs.contents['PARAM'].get_contents(copy=True)[last_name]
+                    input_structure.name_iter()
+                    input_structure.set_rows(len(tmp_value))
+                    input_structure.set_value(tmp_value)
+                    pdb.set_trace()
+                    self.inputs.contents['PARAM'].append(input_structure)
+            # line: 34 - time stepsto end of solids
+            tprt_list = []
+            while cur_line := due.readline().split():
+                for tstep in cur_line:
+                    tprt_list.append(float(tstep))
+            due.close()
         elif key == 'OTHER':
             print('placeholder for additional inputs')
         else:

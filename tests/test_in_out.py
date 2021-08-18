@@ -233,7 +233,7 @@ class TestInOutContainer:
         assert t_in_cont.size == 1
     def test_mult_append(self):
         t_in_cont = io.Container('all',
-                                      description='description of all items in container')
+                                 description='description of all items in container')
         t_in1 = io.Input0D(name='var_in1') 
         t_in2 = io.Input0D(name='var_in2') 
         t_in3 = io.Input0D(name='var_in3')
